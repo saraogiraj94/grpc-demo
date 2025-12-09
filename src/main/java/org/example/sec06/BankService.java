@@ -7,9 +7,11 @@ import org.example.models.AccountBalance;
 import org.example.models.AllAccountBalance;
 import org.example.models.BalanceCheckRequest;
 import org.example.models.BankServiceGrpc;
+import org.example.models.DepositRequest;
 import org.example.models.Money;
 import org.example.models.WithdrawRequest;
 import org.example.sec06.repository.AccountRepo;
+import org.example.sec06.requestHandlers.DepositRequestHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,4 +66,9 @@ public class BankService extends BankServiceGrpc.BankServiceImplBase {
 		responseObserver.onCompleted();
 	}
 
+	//StreamObserver <DepositRequest> is to make server know that multiple request will come and streaming need to be switched on from client side
+	@Override
+	public StreamObserver<DepositRequest> deposit(StreamObserver<AccountBalance> responseObserver) {
+		return new DepositRequestHandler(responseObserver);
+	}
 }

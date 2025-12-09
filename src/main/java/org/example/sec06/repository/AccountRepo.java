@@ -31,4 +31,5 @@ public class AccountRepo {
 	public static void deduct(int accountNumber, int amount) {
 		db.computeIfPresent(accountNumber, (k, v) -> v - amount);
 	}
+
 }
