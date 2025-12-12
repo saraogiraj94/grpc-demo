@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package sec09;
+
+import 'google/protobuf/empty.proto';
+
+option java_multiple_files = true;
+option java_package = "org.example.sec09";
+
+message BalanceCheckRequest {
+  int32 account_number = 1;
+}
+
+message AccountBalance {
+  int32 account_number = 1;
+  int32 balance = 2;
+}
+
+message AllAccountBalance {
+  repeated AccountBalance accountsBalance = 1;
+}
+
+message WithdrawRequest{
+  int32 account_number = 1;
+  int32 amount = 2;
+}
+
+message Money{
+  int32 amount = 1;
+}
+
+
+
+
+
+service BankService{
+
+  //actNumber should be between 1 and 10
+  //unary
+  rpc GetAccountBalance(BalanceCheckRequest) returns (AccountBalance);
+
+
+
+  //amt should be in multiples of 10
+  //server streaming
+  rpc withdraw(WithdrawRequest) returns (stream Money);
+
+
+}
+
+
+
+
+
