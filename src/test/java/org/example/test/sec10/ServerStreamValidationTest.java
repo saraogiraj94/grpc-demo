@@ -1,0 +1,55 @@
+package org.example.test.sec10;
+
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
+import org.example.sec10.Money;
+import org.example.sec10.ValidationCode;
+import org.example.sec10.WithdrawRequest;
+import org.example.test.common.ResponseObserver;
+import org.example.test.sec10.AbstractTest;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.stream.Stream;
+
+public class ServerStreamValidationTest extends AbstractTest {
+
+	@ParameterizedTest
+	@MethodSource("testData")
+	public void blockingInputValidationTest(WithdrawRequest withdrawRequest, Status.Code code, ValidationCode validationCode) {
+
+		var ex = Assertions.assertThrows(StatusRuntimeException.class, () -> {
+			var response = this.bankServiceBlockingStub.withdraw(withdrawRequest).hasNext();
+		});
+
+		Assertions.assertEquals(code, ex.getStatus().getCode());
+		Assertions.assertEquals(validationCode, getValidationCode(ex));
+
+	}
+
+	@ParameterizedTest
+	@MethodSource("testData")
+	public void asyncInputValidationTest(WithdrawRequest withdrawRequest, Status.Code code, ValidationCode validationCode) {
+
+		var observer = ResponseObserver.<Money>create();
+		this.bankServiceStub.withdraw(withdrawRequest, observer);
+		observer.await();
+
+		//As exception not getting any items in list
+		Assertions.assertTrue(observer.getList().isEmpty());
+		Assertions.assertNotNull(observer.getThrowable());
+		Assertions.assertEquals(code, ((StatusRuntimeException) observer.getThrowable()).getStatus().getCode());
+		Assertions.assertEquals(validationCode, getValidationCode(observer.getThrowable()));
+	}
+
+	private Stream<Arguments> testData() {
+		return Stream.of(Arguments.of(WithdrawRequest.newBuilder().setAccountNumber(11).setAmount(101).build(), Status.Code.INVALID_ARGUMENT,
+						ValidationCode.INVALID_ACCOUNT),
+				Arguments.of(WithdrawRequest.newBuilder().setAccountNumber(10).setAmount(17).build(), Status.Code.INVALID_ARGUMENT,
+						ValidationCode.INVALID_AMOUNT),
+				Arguments.of(WithdrawRequest.newBuilder().setAccountNumber(10).setAmount(120).build(), Status.Code.FAILED_PRECONDITION,
+						ValidationCode.INSUFFICIENT_BALANCE));
+	}
+}
