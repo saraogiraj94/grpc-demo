@@ -49,11 +49,19 @@ public class BankService extends org.example.sec09.BankServiceGrpc.BankServiceIm
 		}
 
 		for (int i = 0; i < amount / 10; i++) {
-			var money = org.example.sec09.Money.newBuilder().setAmount(10).build();
-			responseObserver.onNext(money);
-			log.info("money sent {}", money);
-			AccountRepo.deductAmount(accountNumber, 10);
-			Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
+			try {
+				var money = org.example.sec09.Money.newBuilder().setAmount(10).build();
+				if (i == 3) {
+					throw new RuntimeException("oops something went wrong");
+				}
+				responseObserver.onNext(money);
+				log.info("money sent {}", money);
+				AccountRepo.deductAmount(accountNumber, 10);
+				Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
+			} catch (Exception e) {
+				responseObserver.onError(Status.INTERNAL.withDescription(e.getMessage()).asRuntimeException());
+			}
+
 		}
 
 		responseObserver.onCompleted();
