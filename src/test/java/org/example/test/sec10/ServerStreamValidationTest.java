@@ -6,7 +6,6 @@ import org.example.sec10.Money;
 import org.example.sec10.ValidationCode;
 import org.example.sec10.WithdrawRequest;
 import org.example.test.common.ResponseObserver;
-import org.example.test.sec10.AbstractTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;

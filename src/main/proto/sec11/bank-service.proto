@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package sec11;
+
+
+option java_multiple_files = true;
+option java_package = "org.example.sec11";
+
+message BalanceCheckRequest {
+  int32 account_number = 1;
+}
+
+message AccountBalance {
+  int32 account_number = 1;
+  int32 balance = 2;
+}
+
+message AllAccountBalance {
+  repeated AccountBalance accountsBalance = 1;
+}
+
+message WithdrawRequest{
+  int32 account_number = 1;
+  int32 amount = 2;
+}
+
+message Money{
+  int32 amount = 1;
+}
+
+//Application level validation/error messages
+enum ValidationCode{
+  INVALID_ACCOUNT = 0;
+  INVALID_AMOUNT = 1;
+  INSUFFICIENT_BALANCE = 2;
+}
+
+message ErrorMessage{
+  ValidationCode validation_code = 1;
+}
+
+
+
+service BankService{
+
+  //actNumber should be between 1 and 10
+  //unary
+  rpc GetAccountBalance(BalanceCheckRequest) returns (AccountBalance);
+
+
+
+  //amt should be in multiples of 10
+  //server streaming
+  rpc withdraw(WithdrawRequest) returns (stream Money);
+
+
+}
+
+
+
+
+
